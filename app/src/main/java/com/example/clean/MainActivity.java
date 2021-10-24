@@ -87,11 +87,19 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onSeekTo(long pos) {
+      int delta = 7;
+
       mediaSession.setPlaybackState(playbackStateBuilder
-          .setState(STATE_PAUSED, 0, 1)
+          .setState(mediaSession.getController().getPlaybackState().getState(), pos - delta, 1)
           .setActions(ACTION_SEEK_TO | ACTION_PLAY)
           .build());
-      postNotification();
+
+      delay(delta, () -> {
+        mediaSession.setPlaybackState(playbackStateBuilder
+            .setState(STATE_PAUSED, 0, 1)
+            .build());
+        postNotification();
+      });
     }
   };
 
@@ -101,4 +109,13 @@ public class MainActivity extends AppCompatActivity {
       mediaSession.getController().getTransportControls().play();
     }
   };
+
+  private static void delay(long millis, Runnable runnable) {
+    new Thread(() -> {
+      try {
+        Thread.sleep(millis);
+        runnable.run();
+      } catch (InterruptedException ignored) {}
+    }).start();
+  }
 }
